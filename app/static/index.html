@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>퍼시스그룹 공간 개설 비용</title>
+<link rel="stylesheet" href="/static/tokens.css">
+<script src="/static/d3.min.js"></script>
+<script src="/data.js"></script>
+<script src="/static/shim.js"></script>
+</head><body><div id="dash-root">
+
+<style>
+@font-face{font-family:'Pretendard';font-weight:400;font-style:normal;font-display:swap;src:url('/static/fonts/Pretendard-Regular.subset.woff2') format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:500;font-style:normal;font-display:swap;src:url('/static/fonts/Pretendard-Medium.subset.woff2') format('woff2')}
+@font-face{font-family:'Pretendard';font-weight:600 700;font-style:normal;font-display:swap;src:url('/static/fonts/Pretendard-SemiBold.subset.woff2') format('woff2')}
+.fc{--fc-font:'Pretendard',var(--font-anthropic-sans),-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+/* 퍼시스 Extended Palette */
+.fc{--fx-white:#E6EBED;--fx-lgray:#A9B4B8;--fx-dgray:#768085;--fx-dgray2:#2A343B;--fx-black:#0D1012;--fx-red:#E3001C;
+--fx-brown:#4F360D;--fx-orange:#F47018;--fx-yellow:#FFB006;--fx-olive:#838806;--fx-green:#309F2E;--fx-slate:#37847D;--fx-blue:#0075EA;--fx-sky:#6B8FE5;--fx-cyan:#67C0FF;--fx-mint:#A5D3CF;--fx-lilac:#C6AEE0;
+--fc-c1:var(--fx-lilac);--fc-c2:var(--fx-olive);--fc-c3:var(--fx-blue);--fc-c4:var(--fx-orange);--fc-c5:var(--fx-slate);
+--fc-fg:var(--fx-black);--fc-muted:var(--fx-dgray);--fc-panel:#F3F6F7;--fc-line:#D5DCDF;--fc-grid:#D5DCDF;--fc-accent:var(--fx-dgray2);--fc-on-accent:var(--fx-white);--fc-warn:var(--fx-orange);
+color:var(--fc-fg)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fc{--fc-c3:var(--fx-sky);--fc-c5:var(--fx-mint);--fc-c2:#A9AE2A;--fc-fg:var(--fx-white);--fc-muted:var(--fx-lgray);--fc-panel:var(--fx-dgray2);--fc-line:#3A464E;--fc-grid:#3A464E;--fc-accent:var(--fx-white);--fc-on-accent:var(--fx-dgray2)}}
+:root[data-theme="dark"] .fc{--fc-c3:var(--fx-sky);--fc-c5:var(--fx-mint);--fc-c2:#A9AE2A;--fc-fg:var(--fx-white);--fc-muted:var(--fx-lgray);--fc-panel:var(--fx-dgray2);--fc-line:#3A464E;--fc-grid:#3A464E;--fc-accent:var(--fx-white);--fc-on-accent:var(--fx-dgray2)}
+.fc,.fc button,.fc select,.fc input{font-family:var(--fc-font)}
+.fc{display:flex;flex-direction:column;gap:var(--cds-gap-xl);font-family:var(--fc-font);color:var(--fc-fg)}
+.fc h1{font-family:var(--fc-font);font-weight:600;letter-spacing:-.01em;font-size:var(--cds-font-size-title);margin:0;text-wrap:balance}
+.fc h2{font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium);margin:0;text-wrap:balance}
+.fc-lede{margin:var(--cds-gap-sm) 0 0;color:var(--fc-muted);max-width:68ch;line-height:1.55}
+.fc-lede b{color:var(--fc-fg);font-weight:var(--cds-font-weight-medium);font-variant-numeric:tabular-nums}
+.fc-sub{margin:4px 0 0;color:var(--fc-muted);font-size:var(--cds-font-size-caption);line-height:1.5;max-width:72ch}
+.fc-filters{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:flex-end;padding:var(--cds-pad-md) 0;border-top:1px solid var(--fc-line);border-bottom:1px solid var(--fc-line)}
+.fc-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fc-field>span{font-size:var(--cds-font-size-caption);color:var(--fc-muted);letter-spacing:.02em}
+.fc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fc-chip{font:inherit;font-size:var(--cds-font-size-caption);padding:5px 11px;border-radius:999px;border:1px solid var(--fc-line);background:transparent;color:var(--fc-muted);cursor:pointer}
+.fc-chip[aria-pressed="true"]{background:var(--fc-accent);color:var(--fc-on-accent);border-color:var(--fc-accent)}
+.fc-chip:focus-visible,.fc-btn:focus-visible,.fc-table tbody tr:focus-visible{outline:2px solid var(--fc-accent);outline-offset:2px}
+.fc-check{display:flex;gap:6px;align-items:center;font-size:var(--cds-font-size-caption);color:var(--fc-muted);padding-bottom:6px}
+.fc-btn{font:inherit;font-size:var(--cds-font-size-caption);padding:5px 11px;border-radius:var(--cds-radius);border:1px solid var(--fc-line);background:var(--fc-panel);color:var(--fc-fg);cursor:pointer}
+.fc-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--cds-gap-md)}
+.fc-kpi{background:var(--fc-panel);border:1px solid var(--fc-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);display:flex;flex-direction:column;gap:4px;min-width:0}
+.fc-kpi>span{font-size:var(--cds-font-size-caption);color:var(--fc-muted)}
+.fc-kpi>b{font-family:var(--fc-font);font-weight:600;letter-spacing:-.01em;font-size:var(--cds-font-size-title);font-variant-numeric:tabular-nums;line-height:1.15}
+.fc-kpi>small{font-size:var(--cds-font-size-caption);color:var(--fc-muted)}
+.fc-sec{display:flex;flex-direction:column;gap:var(--cds-gap-md);min-width:0}
+.fc-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--cds-gap-xl)}
+.fc-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:var(--cds-font-size-caption);color:var(--fc-muted);list-style:none;margin:0;padding:0}
+.fc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.fc-chart{position:relative;min-height:220px;width:100%}
+.fc-chart svg{display:block;overflow:visible}
+.fc-chart text{fill:var(--cds-text-secondary);font-size:11px;font-family:var(--fc-font)}
+.fc-chart .tick line{stroke:var(--fc-grid)}
+.fc-chart .domain{stroke:var(--cds-chart-axis)}
+.fc-tip{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);box-shadow:var(--cds-shadow-popover);border-radius:var(--cds-radius);padding:8px 10px;font-size:12px;line-height:1.5;color:var(--fc-fg);white-space:nowrap;z-index:5}
+.fc-tip .m{color:var(--cds-text-secondary)}
+.fc-wrap{overflow-x:auto;border:1px solid var(--fc-line);border-radius:var(--cds-radius)}
+.fc-table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+.fc-table th,.fc-table td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--fc-line);white-space:nowrap}
+.fc-table th{font-weight:var(--cds-font-weight-medium);font-size:var(--cds-font-size-caption);color:var(--fc-muted);background:var(--fc-panel);position:sticky;top:0}
+.fc-table td.n,.fc-table th.n{text-align:right}
+.fc-list{max-height:520px;overflow:auto}
+.fc-list tbody tr{cursor:pointer}
+.fc-list tbody tr:hover{background:var(--fc-panel)}
+.fc-list tbody tr.on{background:var(--fc-panel);box-shadow:inset 3px 0 0 var(--fc-accent)}
+.fc-pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--fc-line);color:var(--fc-muted)}
+.fc-pill.warn{border-color:var(--fc-warn);color:var(--fc-warn)}
+.fc-heat td.c{text-align:right}
+.fc-bench-bar{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:flex-end;justify-content:space-between;padding-top:var(--cds-pad-md);border-top:1px solid var(--fc-line)}
+.fc-bench-bar>div{flex:1 1 320px;min-width:0}
+.fc-bench-bar>p{flex-basis:100%;margin:0}
+.fc-heat tr.grp td{font-weight:600;background:var(--fc-panel)}
+.fc-dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:0}
+.fc-heat tr.tot td{font-weight:600;border-top:1px solid var(--fc-line)}
+.fc-heat tr.meta td{color:var(--fc-muted);font-size:12px}
+.fc-heat td small{color:var(--fc-muted);margin-left:4px}
+.fc-tools{display:flex;flex-wrap:wrap;gap:var(--cds-gap-md);align-items:flex-end;justify-content:space-between}
+.fc-tools input{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--fc-line);border-radius:var(--cds-radius);background:var(--color-bg);color:var(--fc-fg);min-width:0;width:220px;max-width:100%}
+.fc-detail{background:var(--fc-panel);border:1px solid var(--fc-line);border-radius:var(--cds-radius);padding:var(--cds-pad-lg);display:flex;flex-direction:column;gap:var(--cds-gap-md);min-width:0}
+.fc-detail h3{margin:0;font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium)}
+.fc-detail .meta{font-size:var(--cds-font-size-caption);color:var(--fc-muted);line-height:1.6}
+.fc-bars{display:flex;flex-direction:column;gap:6px}
+.fc-bar{display:grid;grid-template-columns:88px 1fr 150px;gap:8px;align-items:center;font-size:13px}
+.fc-bar>div{height:10px;background:var(--color-bg);border-radius:2px;overflow:hidden}
+.fc-bar>div>i{display:block;height:100%}
+.fc-bar>b{font-weight:400;text-align:right;font-variant-numeric:tabular-nums}
+.fc-empty{color:var(--fc-muted);font-size:13px;padding:var(--cds-pad-md) 0}
+.fc details{font-size:13px;color:var(--fc-muted);line-height:1.6}
+.fc details summary{cursor:pointer;color:var(--fc-fg)}
+.fc details li{margin:4px 0}
+[data-dash-source-state=refreshing]{opacity:.5}
+</style>
+
+<div class="fc">
+  <header id="top">
+    <h1>퍼시스그룹 공간 개설 비용</h1>
+    <p class="fc-lede">선택한 조건에서 <b data-draw="lede-n" data-source="spaces" data-field="id">—</b>개 공간에 총 <b data-draw="lede-total" data-source="spaces" data-field="총비용">—</b>이 들었습니다. 지출이 가장 큰 항목은 <b data-draw="lede-item">—</b>이고, 브랜드 중에서는 <b data-draw="lede-brand" data-source="spaces" data-field="브랜드">—</b>의 지출이 가장 큽니다.</p>
+    <p class="fc-sub">2015–2025년 브랜드별 비용정리 시트와 2024–2026년 퍼시스 프로젝트(컨플루언스)를 한 형식으로 합친 데이터입니다. 총비용 = 설계비 + 파사드 + 인테리어 + VM + 그래픽·사인 (기존 시트의 '총 합계'와 달리 설계비·파사드 포함). 금액 단위는 원이며, 부가세 포함 여부는 원본 시트를 따릅니다.</p>
+  </header>
+
+  <div class="fc-filters" id="filters">
+    <div class="fc-field" id="f-brand">
+      <span>브랜드</span>
+      <div class="fc-chips">
+        <button class="fc-chip" type="button" data-brand="퍼시스" aria-pressed="true">퍼시스</button>
+        <button class="fc-chip" type="button" data-brand="일룸" aria-pressed="true">일룸</button>
+        <button class="fc-chip" type="button" data-brand="시디즈" aria-pressed="true">시디즈</button>
+        <button class="fc-chip" type="button" data-brand="데스커" aria-pressed="true">데스커</button>
+        <button class="fc-chip" type="button" data-brand="알로소" aria-pressed="true">알로소</button>
+        <button class="fc-chip" type="button" data-brand="슬로우" aria-pressed="true">슬로우</button>
+        <button class="fc-chip" type="button" data-brand="컬렉티브" aria-pressed="true">컬렉티브</button>
+      </div>
+    </div>
+    <label class="fc-field"><span>공간 카테고리</span>
+      <select class="dash-select" id="f-cat" aria-label="공간 카테고리">
+        <option value="">전체</option><option>매장</option><option>몰 입점</option><option>전시</option><option>팝업</option><option>내부 프로젝트</option>
+      </select></label>
+    <label class="fc-field"><span>공사 유형</span>
+      <select class="dash-select" id="f-type" aria-label="공사 유형">
+        <option value="">전체</option><option>신규</option><option>리뉴얼·개선</option><option>이전·확장</option>
+      </select></label>
+    <label class="fc-field"><span>세부 유형</span>
+      <select class="dash-select" id="f-sub" aria-label="세부 유형">
+        <option value="">전체</option>
+        <optgroup label="퍼시스"><option value="퍼시스|비즈니스허브">비즈니스허브</option><option value="퍼시스|브랜드전시장">브랜드전시장</option><option value="퍼시스|해외쇼룸">해외쇼룸</option><option value="퍼시스|전시행사">전시행사</option><option value="퍼시스|내부 프로젝트">내부 프로젝트</option></optgroup>
+        <optgroup label="일룸"><option value="일룸|직영 (P)">직영 (P)</option><option value="일룸|투자형 대리점 (투B)">투자형 대리점 (투B)</option><option value="일룸|일반 대리점 (B/S)">일반 대리점 (B/S)</option><option value="일룸|미분류">미분류</option></optgroup>
+      </select></label>
+    <label class="fc-field"><span>시작 연도</span>
+      <select class="dash-select" id="f-y0" aria-label="시작 연도">
+        <option value="">전체</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option>
+      </select></label>
+    <label class="fc-field"><span>끝 연도</span>
+      <select class="dash-select" id="f-y1" aria-label="끝 연도">
+        <option value="">전체</option><option>2015</option><option>2016</option><option>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option><option>2026</option>
+      </select></label>
+    <label class="fc-check"><input type="checkbox" id="f-partial"> 합계·그래프에 비용이 확정되지 않은 공간(일부 항목만·예상 금액)도 포함</label>
+    <button class="fc-btn" type="button" id="f-reset">조건 초기화</button>
+  </div>
+
+  <div class="fc-kpis" id="kpis">
+    <div class="fc-kpi"><span>공간 수</span><b data-draw="k-n" data-source="spaces" data-field="id">—</b><small data-draw="k-n-sub">—</small></div>
+    <div class="fc-kpi"><span>총비용</span><b data-draw="k-total" data-source="spaces" data-field="총비용">—</b><small>설계·파사드·인테리어·VM·그래픽 합계</small></div>
+    <div class="fc-kpi"><span>공간당 비용 (중앙값)</span><b data-draw="k-med" data-source="spaces" data-field="총비용">—</b><small>절반의 공간이 이 금액 이하</small></div>
+    <div class="fc-kpi"><span>평당 비용 (중앙값)</span><b data-draw="k-ppy" data-source="spaces" data-field="총비용">—</b><small>면적 5평 이상 공간 기준</small></div>
+  </div>
+
+  <ul class="fc-legend" id="legend" aria-label="비용 항목 색상">
+    <li><i data-item="0"></i>설계비</li><li><i data-item="1"></i>파사드</li><li><i data-item="2"></i>인테리어</li><li><i data-item="3"></i>VM</li><li><i data-item="4"></i>그래픽·사인</li>
+  </ul>
+
+  <div class="fc-two">
+    <section class="fc-sec" id="by-brand">
+      <div><h2>브랜드별 항목 지출</h2><p class="fc-sub">막대 하나가 한 브랜드의 총비용이며, 색은 비용 항목입니다.</p></div>
+      <div class="fc-chart" data-draw="brand-chart" data-source="spaces"></div>
+    </section>
+    <section class="fc-sec" id="by-year">
+      <div><h2>연도별 지출</h2><p class="fc-sub">개설·오픈 연도 기준입니다. 연도가 없는 건은 빠집니다.</p></div>
+      <div class="fc-chart" data-draw="year-chart" data-source="spaces"></div>
+    </section>
+  </div>
+
+  <div class="fc-bench-bar" id="bench-period">
+    <div><h2>예산 기준값</h2><p class="fc-sub">아래 세 표는 예산을 세울 때 참고하는 기준값이라, 위의 연도 필터 대신 여기서 고른 기간의 공간만 셉니다. 브랜드·카테고리·공사 유형·세부 유형 필터는 그대로 적용됩니다. 2025년 이후 실적은 아직 일부만 들어와 있어 최근 3년 기준은 건수가 적을 수 있습니다.</p></div>
+    <label class="fc-field"><span>기준 기간</span>
+      <select class="dash-select" id="f-bp" aria-label="기준 기간">
+        <option value="3">최근 3년</option><option value="5">최근 5년</option><option value="">전체 기간</option>
+      </select></label>
+    <p class="fc-sub" data-draw="bench-range">—</p>
+  </div>
+
+  <section class="fc-sec" id="benchmark">
+    <div><h2>카테고리별 평당 비용 기준</h2><p class="fc-sub">기준 기간 안의 공간으로 낸 평당 비용 중앙값입니다. 괄호 안은 건수이며, 전체 비용이 확인되고 면적이 5평 이상인 공간만 셉니다. 3건 미만인 칸은 흐리게 표시합니다.</p></div>
+    <div class="fc-wrap"><table class="fc-table fc-heat">
+      <thead><tr><th>카테고리</th><th class="n">퍼시스</th><th class="n">일룸</th><th class="n">시디즈</th><th class="n">데스커</th><th class="n">알로소</th><th class="n">슬로우</th><th class="n">전체</th></tr></thead>
+      <tbody data-draw="bench" data-source="spaces"></tbody>
+    </table></div>
+  </section>
+
+  <section class="fc-sec" id="per-item">
+    <div><h2>항목별 평당 비용</h2><p class="fc-sub">기준 기간 안의 공간에서 항목별 금액 합계를 면적 합계로 나눈 값입니다. 전체 비용이 확인되고 면적이 5평 이상인 공간만 셉니다. 파사드는 인테리어에 포함하며, 네 항목을 더하면 합계(공간 조성비)가 됩니다. 전시품은 합계에 넣지 않고 따로 보여주며, 전시품 금액이 적힌 공간만으로 계산합니다(괄호 안은 건수). 과거 시트에는 전시품 비용이 없어서, 새 컨플루언스 양식의 전시품 칸이 채워지면 숫자가 나타납니다. 원본에 설계비가 따로 적히지 않은 공간이 많아 설계비는 실제보다 낮게 나올 수 있습니다.</p></div>
+    <div class="fc-wrap"><table class="fc-table fc-heat">
+      <thead><tr><th>항목 (만원/평)</th><th class="n">퍼시스</th><th class="n">일룸</th><th class="n">시디즈</th><th class="n">데스커</th><th class="n">알로소</th><th class="n">슬로우</th><th class="n">전체</th></tr></thead>
+      <tbody data-draw="per-item" data-source="spaces"></tbody>
+    </table></div>
+  </section>
+
+  <section class="fc-sec" id="by-subtype">
+    <div><h2>세부 유형별 평당 비용</h2><p class="fc-sub">퍼시스와 일룸의 세부 유형별로 본 평당 비용입니다. 중앙값은 공간별 평당 비용의 가운데 값이고, 항목별 값은 항목 금액 합계를 면적 합계로 나눈 값입니다. 전체 비용이 확인되고 면적이 5평 이상인 공간만 셉니다.</p></div>
+    <div class="fc-wrap"><table class="fc-table fc-heat">
+      <thead><tr><th>세부 유형</th><th class="n">공간 수</th><th class="n">평당 중앙값</th><th class="n">설계비</th><th class="n">인테리어</th><th class="n">VM</th><th class="n">그래픽·사인</th><th class="n">합계</th></tr></thead>
+      <tbody data-draw="by-subtype" data-source="spaces"></tbody>
+    </table></div>
+    <p class="fc-sub">일룸 원본 시트에는 공간명에 (P)·(B) 표기만 있어서 투자형 대리점(투B)은 아직 구분되지 않았고, 표기가 없는 공간은 미분류로 두었습니다. 퍼시스 브랜드전시장은 아직 비용이 들어온 공간이 없습니다.</p>
+  </section>
+
+  <section class="fc-sec" id="collective" hidden>
+    <div><h2>컬렉티브 매장</h2><p class="fc-sub">퍼시스를 제외한 브랜드가 함께 운영하는 컬렉티브 매장입니다. 브랜드별로 각자 쓴 비용과 면적, 합친 금액을 보여줍니다. 브랜드 버튼에서 '컬렉티브'를 눌렀을 때만 나오며, 연도 필터와 상관없이 모든 컬렉티브 매장을 보여줍니다.</p></div>
+    <div class="fc-wrap"><table class="fc-table fc-heat">
+      <thead><tr><th>매장</th><th>오픈</th><th class="n">일룸</th><th class="n">시디즈</th><th class="n">데스커</th><th class="n">알로소</th><th class="n">슬로우</th><th class="n">합계</th><th class="n">면적 합계</th><th class="n">평당</th></tr></thead>
+      <tbody data-draw="collective" data-source="spaces"></tbody>
+    </table></div>
+    <p class="fc-sub" data-draw="collective-note">—</p>
+  </section>
+
+  <section class="fc-sec" id="list">
+    <div class="fc-tools">
+      <div><h2>공간 목록</h2><p class="fc-sub">조건에 맞는 모든 공간을 보여줍니다. 인테리어 비용이 빠진 공간은 '비용 범위'에 표시되며, 위 합계·그래프·평당 기준에는 체크박스를 켰을 때만 들어갑니다. 행을 누르면 아래에 항목별 비용과 VM·사인 세부 내역이 나옵니다.</p></div>
+      <div class="fc-tools" style="justify-content:flex-end">
+        <label class="fc-field"><span>정렬</span>
+          <select class="dash-select" id="f-sort" aria-label="정렬">
+            <option value="총비용">총비용 큰 순</option><option value="연도">최근 연도 순</option><option value="평당">평당 비용 큰 순</option><option value="면적">면적 큰 순</option>
+          </select></label>
+        <label class="fc-field"><span>공간명 검색</span><input id="f-q" type="search" placeholder="예: 스타필드, 논현" aria-label="공간명 검색"></label>
+      </div>
+    </div>
+    <div class="fc-wrap fc-list"><table class="fc-table" data-source="spaces" data-row-key="id">
+      <thead><tr><th data-field="연도">연도</th><th data-field="브랜드">브랜드</th><th data-field="공간명">공간명</th><th data-field="카테고리">카테고리</th><th data-field="공사유형">공사 유형</th><th class="n" data-field="면적_평">면적(평)</th><th class="n" data-field="총비용">총비용</th><th class="n">평당</th><th data-field="비용범위">비용 범위</th></tr></thead>
+      <tbody data-draw="list"></tbody>
+    </table></div>
+    <p class="fc-sub" data-draw="list-count">—</p>
+    <div class="fc-detail" id="detail" data-draw="detail" data-source="spaces details"></div>
+  </section>
+
+  <details id="notes">
+    <summary>데이터를 이렇게 정리했습니다</summary>
+    <ul>
+      <li>데이터 기준일: <span id="snapshot-date"></span>. 분기마다 브랜드별 비용 시트를 읽어 갱신합니다.</li>
+      <li>원본: 구글 시트 '일룸 공간 비용'. 브랜드 시트(일룸·데스커·슬로우 비용정리, 3팀 시디즈·알로소 비용정리), 가로형 시트(퍼시스+그룹, 기타 브랜드, 슬로우 비용, 본사1층 전시비용)를 한 형식으로 합쳤습니다.</li>
+      <li>'시디즈 비용'과 '알로소 비용' 시트는 3팀 시트와 같은 건이라 빼고, 두 시트에 같은 금액으로 들어 있던 3건(18·19년 코펀, 본사 1층 디즈니아띠)은 한 번만 셉니다.</li>
+      <li>VM비용관리·SIGN비용관리 시트는 공간의 세부 내역으로 연결했습니다. 금액은 브랜드 시트를 기준으로 하고, 브랜드 시트에 없는 공간만 '비용 범위: VM·사인만 확인'으로 추가했습니다. 이 공간은 인테리어 비용이 빠져 있어 기본 화면과 평당 기준에서 제외합니다.</li>
+      <li>2024–2026년 퍼시스 프로젝트 7건(가락쇼룸 8F 라운지, 베트남 쇼룸, Focus Group Event, 비즈니스허브 송파 HQ·강남, CIFF 광저우, LA 쇼룸)은 컨플루언스 '공간 리뉴얼/신규 오픈' 하위 페이지의 비용 표에서 가져왔습니다. 비용 칸이 비어 있는 페이지(여의도, 광주센터, 성수·코엑스 팝업, 네오콘, UKF 등)는 넣지 않았고, 인테리어 금액이 없는 공간은 '일부 항목만'으로 표시합니다.</li>
+      <li>데스커는 컨플루언스 '[D] 매장개설비용' 시트(2017–2026)를, 슬로우 2024–2025년은 컨플루언스 '2024년 비용' 페이지를 기준으로 다시 넣었습니다. 데스커 시트의 디자인비·실시도면비는 설계비로 합쳤습니다.</li>
+      <li>컬렉티브 매장(노원·대구·대전·광교)은 컨플루언스 'Project Brand Collective' 스페이스의 매장별 집행비 페이지를 기준으로 브랜드별 금액을 넣었습니다. 광교점은 아직 품의(예상) 금액입니다. 컬렉티브 매장 안의 퍼시스 비용(대전 2,670만, 대구 사인 65만)은 컬렉티브 합계에서 뺐습니다.</li>
+      <li>시디즈 2024–2025년 더프 매장은 시디즈 '공간' 페이지의 실행 금액으로 고치고 청주점·마곡점을 추가했습니다.</li>
+      <li>차량 랩핑, 샘플·마감재북 제작, 소품 패키지처럼 공간이 아닌 VM·사인 집행 54건은 넣지 않았습니다.</li>
+      <li>공간 카테고리와 공사 유형은 공간명과 원본 구분값으로 자동 분류한 값입니다. 틀린 건은 알려주시면 고칩니다.</li>
+      <li>원본 '관련품의' 열의 전자결재 링크는 열어보지 않았고 데이터에도 넣지 않았습니다.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+window.FC = window.FC || {brands:new Set(['퍼시스','일룸','시디즈','데스커','알로소','슬로우','컬렉티브']),cat:'',type:'',sub:'',bp:'3',y0:'',y1:'',partial:false,q:'',sort:'총비용',sel:null};
+window.FC_COLORS=['var(--fc-c1)','var(--fc-c2)','var(--fc-c3)','var(--fc-c4)','var(--fc-c5)'];
+window.FC_ITEMS=[['설계비','설계비'],['파사드','파사드'],['인테리어','인테리어'],['VM','VM'],['그래픽_사인','그래픽·사인']];
+window.FC_BRANDS=['퍼시스','일룸','시디즈','데스커','알로소','슬로우'];
+window.FC_CHIPS=['퍼시스','일룸','시디즈','데스커','알로소','슬로우','컬렉티브'];
+window.FC_CATS=['매장','몰 입점','전시','팝업','내부 프로젝트'];
+window.fcKRW=function(v){if(v==null||isNaN(v))return '—';var a=Math.abs(v);if(a>=1e8)return (v/1e8).toFixed(a>=1e10?0:1)+'억';if(a>=1e4)return Math.round(v/1e4).toLocaleString('ko-KR')+'만';return Math.round(v).toLocaleString('ko-KR')+'원';};
+window.fcPPY=function(v){return v==null||isNaN(v)?'—':Math.round(v/1e4).toLocaleString('ko-KR')+'만/평';};
+window.fcRows=function(opts){var s=dash.data('spaces');if(s.status!=='ok')return null;var F=window.FC;opts=opts||{};
+  return s.data.filter(function(r){
+    if(!(F.brands.has(r['브랜드'])||(r['컬렉티브']&&F.brands.has('컬렉티브'))))return false;
+    if(F.cat&&r['카테고리']!==F.cat)return false;
+    if(F.type&&r['공사유형']!==F.type)return false;
+    if(F.sub){var sp=F.sub.split('|');if(r['브랜드']!==sp[0]||r['세부유형']!==sp[1])return false;}
+    if(opts.bench){if(F.bp&&!(r['연도']>=window.fcBenchFrom()))return false;}else{
+    if(F.y0&&!(r['연도']>=+F.y0))return false;
+    if(F.y1&&!(r['연도']<=+F.y1))return false;}
+    if(!F.partial&&!opts.allScopes&&r['비용범위']!=='전체')return false;
+    if(opts.useQuery&&F.q&&String(r['공간명']).toLowerCase().indexOf(F.q.toLowerCase())<0)return false;
+    return true;});};
+window.fcBenchFrom=function(){var y=new Date().getFullYear();return y-(+window.FC.bp)+1;};
+window.fcPy=function(r){return r['면적_평']>=5&&r['비용범위']==='전체'?r['총비용']/r['면적_평']:null;};
+window.fcSyncColl=function(){var F=window.FC;var on=F.brands.has('컬렉티브')&&F.brands.size<window.FC_CHIPS.length;document.querySelectorAll('#collective').forEach(function(s){s.hidden=!on;});};
+window.fcRedraw=function(){window.fcSyncColl();['lede-n','lede-total','lede-item','lede-brand','k-n','k-n-sub','k-total','k-med','k-ppy','brand-chart','year-chart','bench-range','bench','per-item','by-subtype','collective','collective-note','list','list-count','detail'].forEach(function(n){dash.draw(n);});};
+document.querySelectorAll('#legend i[data-item]').forEach(function(i){i.style.background=window.FC_COLORS[+i.getAttribute('data-item')%5];});
+document.querySelectorAll('.fc-chip[data-brand]').forEach(function(b){b.addEventListener('click',function(){var F=window.FC,k=b.getAttribute('data-brand');
+  if(F.brands.has(k)&&F.brands.size===window.FC_CHIPS.length){F.brands=new Set([k]);}else if(F.brands.has(k)){F.brands.delete(k);if(!F.brands.size)F.brands=new Set(window.FC_CHIPS);}else F.brands.add(k);
+  document.querySelectorAll('.fc-chip[data-brand]').forEach(function(x){x.setAttribute('aria-pressed',F.brands.has(x.getAttribute('data-brand'))?'true':'false');});window.fcRedraw();});});
+[['f-cat','cat'],['f-type','type'],['f-sub','sub'],['f-bp','bp'],['f-y0','y0'],['f-y1','y1'],['f-sort','sort']].forEach(function(p){document.querySelectorAll('#'+p[0]).forEach(function(el){el.addEventListener('change',function(){window.FC[p[1]]=el.value;window.fcRedraw();});});});
+document.querySelectorAll('#f-partial').forEach(function(el){el.addEventListener('change',function(){window.FC.partial=el.checked;window.fcRedraw();});});
+document.querySelectorAll('#f-q').forEach(function(el){el.addEventListener('input',function(){window.FC.q=el.value.trim();dash.draw('list');dash.draw('list-count');});});
+document.querySelectorAll('#f-reset').forEach(function(el){el.addEventListener('click',function(){var F=window.FC;F.brands=new Set(window.FC_CHIPS);F.cat=F.type=F.sub=F.y0=F.y1=F.q='';F.bp='3';F.partial=false;F.sort='총비용';
+  document.querySelectorAll('.fc-chip[data-brand]').forEach(function(x){x.setAttribute('aria-pressed','true');});
+  document.querySelectorAll('#f-cat,#f-type,#f-sub,#f-y0,#f-y1,#f-q').forEach(function(x){x.value='';});document.querySelectorAll('#f-bp').forEach(function(x){x.value='3';});document.querySelectorAll('#f-sort').forEach(function(x){x.value='총비용';});document.querySelectorAll('#f-partial').forEach(function(x){x.checked=false;});window.fcRedraw();});});
+</script>
+
+<script>
+function fcTxt(name,fn){dash.draw(name,function(el){var rows=window.fcRows();if(!rows){el.textContent='—';return;}el.textContent=fn(rows);});}
+fcTxt('lede-n',function(r){return r.length.toLocaleString('ko-KR');});
+fcTxt('k-n',function(r){return r.length.toLocaleString('ko-KR');});
+fcTxt('lede-total',function(r){return window.fcKRW(d3.sum(r,function(x){return x['총비용'];}));});
+fcTxt('k-total',function(r){return window.fcKRW(d3.sum(r,function(x){return x['총비용'];}));});
+fcTxt('k-med',function(r){return window.fcKRW(d3.median(r,function(x){return x['총비용'];}));});
+fcTxt('k-ppy',function(r){return window.fcPPY(d3.median(r,window.fcPy));});
+fcTxt('k-n-sub',function(r){var all=window.fcRows({allScopes:true});var p=all.length-r.length;return window.FC.partial?'비용 미확정 '+all.filter(function(x){return x['비용범위']!=='전체';}).length+'곳 포함':'비용 미확정 '+p+'곳 제외';});
+fcTxt('lede-item',function(r){if(!r.length)return '—';var best=window.FC_ITEMS.map(function(it){return [it[1],d3.sum(r,function(x){return x[it[0]];})];}).sort(function(a,b){return b[1]-a[1];})[0];return best[0];});
+fcTxt('lede-brand',function(r){if(!r.length)return '—';var g=d3.rollups(r,function(v){return d3.sum(v,function(x){return x['총비용'];});},function(x){return x['브랜드'];}).sort(function(a,b){return b[1]-a[1];});return g[0][0];});
+
+function fcTip(el){var t=el.querySelector('.fc-tip');if(!t){t=document.createElement('div');t.className='fc-tip';t.hidden=true;el.appendChild(t);}return t;}
+function fcShow(el,t,ev,lines){t.replaceChildren();lines.forEach(function(l,i){var d=document.createElement('div');if(i>0)d.className='m';d.textContent=l;t.appendChild(d);});t.hidden=false;
+  var b=el.getBoundingClientRect(),x=ev.clientX-b.left+12,y=ev.clientY-b.top+12;var w=t.offsetWidth;if(x+w>b.width)x=Math.max(0,ev.clientX-b.left-w-12);t.style.left=x+'px';t.style.top=y+'px';}
+function fcStatus(el,id){var s=dash.data(id);if(s.status==='ok')return true;el.replaceChildren();var p=document.createElement('div');p.className='fc-empty';p.textContent=s.status==='error'?'불러오지 못했습니다':'—';el.appendChild(p);return false;}
+function fcEmpty(el,msg){el.replaceChildren();var p=document.createElement('div');p.className='fc-empty';p.textContent=msg;el.appendChild(p);}
+
+dash.draw('brand-chart',function(el){
+  if(!fcStatus(el,'spaces'))return;var rows=window.fcRows();if(!rows.length){fcEmpty(el,'조건에 맞는 공간이 없습니다.');return;}
+  var keys=window.FC_ITEMS.map(function(i){return i[0];});
+  var data=window.FC_BRANDS.filter(function(b){return rows.some(function(r){return r['브랜드']===b;});}).map(function(b){var v=rows.filter(function(r){return r['브랜드']===b;});var o={brand:b,n:v.length};keys.forEach(function(k){o[k]=d3.sum(v,function(x){return x[k];});});o.total=d3.sum(keys,function(k){return o[k];});return o;}).sort(function(a,b){return b.total-a.total;});
+  var W=el.clientWidth||600,rowH=34,M={t:4,r:64,b:24,l:52},H=M.t+M.b+data.length*rowH;
+  el.replaceChildren();var svg=d3.select(el).append('svg').attr('width','100%').attr('viewBox','0 0 '+W+' '+H).attr('role','img').attr('aria-label','브랜드별 항목 지출 막대 그래프');
+  var x=d3.scaleLinear().domain([0,d3.max(data,function(d){return d.total;})||1]).nice().range([M.l,W-M.r]);
+  var y=d3.scaleBand().domain(data.map(function(d){return d.brand;})).range([M.t,H-M.b]).padding(.28);
+  svg.append('g').attr('transform','translate(0,'+(H-M.b)+')').call(d3.axisBottom(x).ticks(Math.max(2,Math.floor(W/140))).tickFormat(window.fcKRW).tickSize(-(H-M.t-M.b))).call(function(g){g.select('.domain').remove();g.selectAll('.tick line').attr('stroke-opacity',.6);});
+  svg.append('g').attr('transform','translate('+M.l+',0)').call(d3.axisLeft(y).tickSize(0)).call(function(g){g.select('.domain').remove();g.selectAll('text').attr('x',-8).style('font-size','12px').style('fill','var(--fc-fg)');});
+  var stack=d3.stack().keys(keys)(data);var t=fcTip(el);
+  svg.append('g').selectAll('g').data(stack).join('g').style('fill',function(d,i){return window.FC_COLORS[i%5];})
+    .selectAll('rect').data(function(d){return d.map(function(p){p.key=d.key;return p;});}).join('rect')
+    .attr('x',function(p){return x(p[0]);}).attr('y',function(p){return y(p.data.brand);}).attr('height',y.bandwidth()).attr('width',function(p){return Math.max(0,x(p[1])-x(p[0]));})
+    .on('pointermove',function(ev,p){var lab=window.FC_ITEMS.find(function(i){return i[0]===p.key;})[1];var v=p.data[p.key];fcShow(el,t,ev,[p.data.brand+' · '+lab+' '+window.fcKRW(v),'브랜드 총비용의 '+(p.data.total?Math.round(v/p.data.total*100):0)+'% · '+p.data.n+'개 공간']);})
+    .on('pointerleave',function(){t.hidden=true;});
+  svg.append('g').selectAll('text').data(data).join('text').attr('x',function(d){return x(d.total)+6;}).attr('y',function(d){return y(d.brand)+y.bandwidth()/2;}).attr('dy','.35em').style('fill','var(--fc-fg)').style('font-size','12px').text(function(d){return window.fcKRW(d.total);});
+  el.appendChild(t);
+});
+
+dash.draw('year-chart',function(el){
+  if(!fcStatus(el,'spaces'))return;var rows=window.fcRows().filter(function(r){return r['연도'];});if(!rows.length){fcEmpty(el,'조건에 맞는 공간이 없습니다.');return;}
+  var keys=window.FC_ITEMS.map(function(i){return i[0];});
+  var ys=d3.range(d3.min(rows,function(r){return r['연도'];}),d3.max(rows,function(r){return r['연도'];})+1);
+  var data=ys.map(function(y){var v=rows.filter(function(r){return r['연도']===y;});var o={year:y,n:v.length};keys.forEach(function(k){o[k]=d3.sum(v,function(x){return x[k];});});o.total=d3.sum(keys,function(k){return o[k];});return o;});
+  var W=el.clientWidth||600,H=260,M={t:12,r:8,b:24,l:52};
+  el.replaceChildren();var svg=d3.select(el).append('svg').attr('width','100%').attr('viewBox','0 0 '+W+' '+H).attr('role','img').attr('aria-label','연도별 총비용 누적 막대 그래프');
+  var x=d3.scaleBand().domain(ys).range([M.l,W-M.r]).padding(.22);
+  var y=d3.scaleLinear().domain([0,d3.max(data,function(d){return d.total;})||1]).nice().range([H-M.b,M.t]);
+  svg.append('g').attr('transform','translate('+M.l+',0)').call(d3.axisLeft(y).ticks(5).tickFormat(window.fcKRW).tickSize(-(W-M.l-M.r))).call(function(g){g.select('.domain').remove();g.selectAll('.tick line').attr('stroke-opacity',.6);});
+  var every=Math.ceil(ys.length/Math.max(2,Math.floor((W-M.l)/44)));
+  svg.append('g').attr('transform','translate(0,'+(H-M.b)+')').call(d3.axisBottom(x).tickSize(0).tickValues(ys.filter(function(y,i){return i%every===0;})).tickFormat(function(d){return String(d);})).call(function(g){g.select('.domain').remove();g.selectAll('text').attr('dy','1em');});
+  var stack=d3.stack().keys(keys)(data);var t=fcTip(el);
+  svg.append('g').selectAll('g').data(stack).join('g').style('fill',function(d,i){return window.FC_COLORS[i%5];})
+    .selectAll('rect').data(function(d){return d.map(function(p){p.key=d.key;return p;});}).join('rect')
+    .attr('x',function(p){return x(p.data.year);}).attr('width',x.bandwidth()).attr('y',function(p){return y(p[1]);}).attr('height',function(p){return Math.max(0,y(p[0])-y(p[1]));})
+    .on('pointermove',function(ev,p){var lab=window.FC_ITEMS.find(function(i){return i[0]===p.key;})[1];fcShow(el,t,ev,[p.data.year+'년 · 총 '+window.fcKRW(p.data.total)+' ('+p.data.n+'개 공간)',lab+' '+window.fcKRW(p.data[p.key])]);})
+    .on('pointerleave',function(){t.hidden=true;});
+  el.appendChild(t);
+});
+
+dash.draw('bench',function(tb){
+  var rows=window.fcRows({bench:true});tb.replaceChildren();if(!rows)return;
+  var base=rows.filter(function(r){return window.fcPy(r)!=null;});
+  window.FC_CATS.forEach(function(c){var tr=document.createElement('tr');var th=document.createElement('td');th.textContent=c;tr.appendChild(th);
+    window.FC_BRANDS.concat(['전체']).forEach(function(b){var v=base.filter(function(r){return r['카테고리']===c&&(b==='전체'?true:r['브랜드']===b);});var td=document.createElement('td');td.className='c';
+      if(!v.length){td.textContent='—';td.style.color='var(--fc-muted)';}
+      else{var m=d3.median(v,window.fcPy);td.textContent=Math.round(m/1e4).toLocaleString('ko-KR')+'만';var s=document.createElement('small');s.textContent='('+v.length+')';td.appendChild(s);if(v.length<3)td.style.opacity='.5';if(b==='전체')td.style.fontWeight='600';}
+      tr.appendChild(td);});
+    tb.appendChild(tr);});
+});
+
+dash.draw('per-item',function(tb){
+  var rows=window.fcRows({bench:true});tb.replaceChildren();if(!rows)return;
+  var base=rows.filter(function(r){return window.fcPy(r)!=null;});
+  var cols=window.FC_BRANDS.concat(['전체']);
+  var grp=cols.map(function(b){var v=base.filter(function(r){return b==='전체'||r['브랜드']===b;});return {b:b,v:v,on:v.length>0,area:d3.sum(v,function(r){return r['면적_평'];})};});
+  var items=[['설계비',function(r){return r['설계비'];},0],['인테리어 (파사드 포함)',function(r){return r['인테리어']+r['파사드'];},2],['VM',function(r){return r['VM'];},3],['그래픽·사인',function(r){return r['그래픽_사인'];},4],['합계 (공간 조성비)',function(r){return r['설계비']+r['인테리어']+r['파사드']+r['VM']+r['그래픽_사인'];},-1]];
+  items.forEach(function(it){var tr=document.createElement('tr');if(it[2]<0)tr.className='tot';var th=document.createElement('td');
+    if(it[2]>=0){var dot=document.createElement('i');dot.className='fc-dot';dot.style.background=window.FC_COLORS[it[2]];th.appendChild(dot);}
+    th.appendChild(document.createTextNode(it[0]));tr.appendChild(th);
+    grp.forEach(function(g){var td=document.createElement('td');td.className='c';
+      if(!g.on){td.textContent='—';td.style.color='var(--fc-muted)';}
+      else{var v=d3.sum(g.v,it[1])/g.area;td.textContent=Math.round(v/1e4).toLocaleString('ko-KR')+'만';if(g.v.length<3)td.style.opacity='.5';if(g.b==='전체')td.style.fontWeight='600';}
+      tr.appendChild(td);});
+    tb.appendChild(tr);});
+  (function(){var tr=document.createElement('tr');var th=document.createElement('td');var dot=document.createElement('i');dot.className='fc-dot';dot.style.background='var(--fx-brown)';th.appendChild(dot);th.appendChild(document.createTextNode('전시품 (별도)'));tr.appendChild(th);
+    grp.forEach(function(g){var td=document.createElement('td');td.className='c';var v=g.v.filter(function(r){return r['전시품']!=null;});
+      if(!g.on||!v.length){td.textContent='—';td.style.color='var(--fc-muted)';}
+      else{var a=d3.sum(v,function(r){return r['면적_평'];});td.textContent=Math.round(d3.sum(v,function(r){return r['전시품'];})/a/1e4).toLocaleString('ko-KR')+'만';var s=document.createElement('small');s.textContent='('+v.length+')';td.appendChild(s);if(v.length<3)td.style.opacity='.5';}
+      tr.appendChild(td);});
+    tb.appendChild(tr);})();
+  var tr=document.createElement('tr');tr.className='meta';var c0=document.createElement('td');c0.textContent='공간 수 · 면적 합계';tr.appendChild(c0);
+  grp.forEach(function(g){var td=document.createElement('td');td.className='c';td.textContent=g.on?g.v.length+'곳 · '+Math.round(g.area).toLocaleString('ko-KR')+'평':'—';tr.appendChild(td);});
+  tb.appendChild(tr);
+});
+
+dash.draw('bench-range',function(el){var F=window.FC;var all=window.fcRows({bench:true});if(!all){el.textContent='—';return;}
+  var n=all.filter(function(r){return window.fcPy(r)!=null;}).length;var y=new Date().getFullYear();
+  el.textContent=(F.bp?(window.fcBenchFrom()+'–'+y+'년'):'전체 기간')+' · 평당 계산에 쓰인 공간 '+n+'곳';});
+
+dash.draw('by-subtype',function(tb){
+  var rows=window.fcRows({bench:true});tb.replaceChildren();if(!rows)return;
+  var base=rows.filter(function(r){return window.fcPy(r)!=null;});
+  var groups=[['퍼시스',['비즈니스허브','브랜드전시장','해외쇼룸','전시행사','내부 프로젝트']],['일룸',['직영 (P)','투자형 대리점 (투B)','일반 대리점 (B/S)','미분류']]];
+  var items=[function(r){return r['설계비'];},function(r){return r['인테리어']+r['파사드'];},function(r){return r['VM'];},function(r){return r['그래픽_사인'];},function(r){return r['총비용'];}];
+  function man(v){return Math.round(v/1e4).toLocaleString('ko-KR')+'만';}
+  groups.forEach(function(g){if(!rows.some(function(r){return r['브랜드']===g[0];}))return;
+    var h=document.createElement('tr');h.className='grp';var hc=document.createElement('td');hc.colSpan=8;hc.textContent=g[0];h.appendChild(hc);tb.appendChild(h);
+    g[1].forEach(function(st){var v=base.filter(function(r){return r['브랜드']===g[0]&&r['세부유형']===st;});var tr=document.createElement('tr');
+      var c=document.createElement('td');c.textContent=st;c.style.paddingLeft='22px';tr.appendChild(c);
+      var a=d3.sum(v,function(r){return r['면적_평'];});
+      var cells=[v.length?v.length+'곳':'—',v.length?man(d3.median(v,window.fcPy)):'—'].concat(items.map(function(f){return v.length?man(d3.sum(v,f)/a):'—';}));
+      cells.forEach(function(x,i){var td=document.createElement('td');td.className='c';td.textContent=x;if(!v.length)td.style.color='var(--fc-muted)';if(v.length&&v.length<3)td.style.opacity='.5';if(i===1||i===6)td.style.fontWeight='600';tr.appendChild(td);});
+      tb.appendChild(tr);});});
+  if(!tb.children.length){var tr=document.createElement('tr');var td=document.createElement('td');td.colSpan=8;td.textContent='브랜드 필터에서 퍼시스나 일룸을 선택하면 나옵니다.';td.style.color='var(--fc-muted)';tr.appendChild(td);tb.appendChild(tr);}
+});
+
+dash.draw('collective',function(tb){
+  var s=dash.data('spaces');tb.replaceChildren();if(s.status!=='ok')return;
+  var cs=s.data.filter(function(r){return r['컬렉티브'];});
+  var stores=d3.groups(cs,function(r){return r['컬렉티브'];}).map(function(g){return {name:g[0],rows:g[1],total:d3.sum(g[1],function(r){return r['총비용'];}),area:d3.sum(g[1],function(r){return r['면적_평']||0;}),atot:d3.sum(g[1].filter(function(r){return r['면적_평'];}),function(r){return r['총비용'];}),amiss:g[1].some(function(r){return !r['면적_평'];}),y:d3.max(g[1],function(r){return (r['연도']||0)*100+(parseInt(r['월'])||0);})};}).sort(function(a,b){return b.y-a.y;});
+  var brands=['일룸','시디즈','데스커','알로소','슬로우'];
+  stores.forEach(function(st){var tr=document.createElement('tr');
+    var c=document.createElement('td');c.textContent=st.name;tr.appendChild(c);
+    var o=document.createElement('td');o.textContent=st.y?Math.floor(st.y/100)+(st.y%100?' '+st.y%100+'월':''):'—';tr.appendChild(o);
+    brands.forEach(function(b){var v=st.rows.filter(function(r){return r['브랜드']===b;});var td=document.createElement('td');td.className='c';
+      if(!v.length){td.textContent='—';td.style.color='var(--fc-muted)';}else{td.textContent=window.fcKRW(d3.sum(v,function(r){return r['총비용'];}))+(v.some(function(r){return r['비용범위']==='예상 금액';})?' 예상':'');var a=d3.sum(v,function(r){return r['면적_평']||0;});if(a){var sm=document.createElement('small');sm.textContent='('+a+'평)';td.appendChild(sm);}}
+      tr.appendChild(td);});
+    [[window.fcKRW(st.total),1],[st.area?(Math.round(st.area*10)/10)+'평'+(st.amiss?' (일부)':''):'—',0],[st.area>=5?window.fcPPY(st.atot/st.area)+(st.amiss?'*':''):'—',0]].forEach(function(x){var td=document.createElement('td');td.className='c';td.textContent=x[0];if(x[1])td.style.fontWeight='600';tr.appendChild(td);});
+    tr.style.cursor='pointer';tr.addEventListener('click',function(){window.FC.sel=st.rows[0].id;dash.draw('list');dash.draw('detail');var de=document.getElementById('detail');if(de)de.scrollIntoView({behavior:'smooth',block:'nearest'});});
+    tb.appendChild(tr);});
+  if(!stores.length){var tr=document.createElement('tr');var td=document.createElement('td');td.colSpan=10;td.textContent='컬렉티브 매장 데이터가 없습니다.';tr.appendChild(td);tb.appendChild(tr);}
+});
+dash.draw('collective-note',function(el){var s=dash.data('spaces');if(s.status!=='ok'){el.textContent='—';return;}
+  var bs=d3.union(s.data.filter(function(r){return r['컬렉티브'];}).map(function(r){return r['브랜드'];}));
+  el.textContent='지금은 '+Array.from(bs).join('·')+' 비용만 들어와 있습니다. \'예상\'은 정산 전 예상·견적 금액입니다. 평당 값에 붙은 *는 면적이 확인된 브랜드만으로 계산했다는 뜻입니다. 다른 브랜드가 같은 매장에 쓴 비용은 컨플루언스 양식의 공간명에 \'컬렉티브 ○○점\'을 그대로 적으면 이 표에 함께 합산됩니다. 행을 누르면 아래 상세가 열립니다.';});
+
+function fcSorted(){var rows=window.fcRows({useQuery:true,allScopes:true});if(!rows)return null;var k=window.FC.sort;
+  var f={'총비용':function(r){return r['총비용'];},'연도':function(r){return (r['연도']||0)*100+(parseInt(r['월'])||0);},'평당':function(r){var v=window.fcPy(r);return v==null?-1:v;},'면적':function(r){return r['면적_평']||0;}}[k]||function(r){return r['총비용'];};
+  return rows.slice().sort(function(a,b){return f(b)-f(a);});}
+dash.draw('list',function(tb){
+  var rows=fcSorted();tb.replaceChildren();if(!rows)return;
+  rows.forEach(function(r){var tr=document.createElement('tr');tr.setAttribute('data-key',String(r.id));tr.tabIndex=0;if(window.FC.sel===r.id)tr.className='on';
+    var py=window.fcPy(r);
+    [[r['연도']?r['연도']+(r['월']?' '+r['월']:''):'미상'],[r['브랜드']],[r['공간명']],[r['카테고리']],[r['공사유형']],[r['면적_평']!=null?r['면적_평'].toLocaleString('ko-KR'):'—','n'],[window.fcKRW(r['총비용']),'n'],[py!=null?Math.round(py/1e4).toLocaleString('ko-KR')+'만':'—','n']].forEach(function(c){var td=document.createElement('td');td.textContent=c[0];if(c[1])td.className=c[1];tr.appendChild(td);});
+    var td=document.createElement('td');var sp=document.createElement('span');sp.className='fc-pill'+(r['비용범위']!=='전체'?' warn':'');sp.textContent=r['비용범위'];td.appendChild(sp);tr.appendChild(td);
+    var pick=function(){window.FC.sel=r.id;dash.draw('list');dash.draw('detail');};
+    tr.addEventListener('click',pick);tr.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();}});
+    tb.appendChild(tr);});
+});
+dash.draw('list-count',function(el){var rows=fcSorted();el.textContent=rows?rows.length.toLocaleString('ko-KR')+'개 공간':'—';});
+
+dash.draw('detail',function(el){
+  el.replaceChildren();var s=dash.data('spaces');var r=s.status==='ok'?s.data.find(function(x){return x.id===window.FC.sel;}):null;
+  if(!r){var e=document.createElement('div');e.className='meta';e.textContent=s.status==='ok'?'목록에서 공간을 선택하면 항목별 비용과 VM·사인 세부 내역이 여기에 나옵니다.':'—';el.appendChild(e);return;}
+  var h=document.createElement('h3');h.textContent=r['브랜드']+' · '+r['공간명'];el.appendChild(h);
+  var py=window.fcPy(r);
+  var meta=document.createElement('div');meta.className='meta';
+  [(r['연도']||'연도 미상')+(r['월']?' '+r['월']:'')+' · '+r['카테고리']+' · '+r['공사유형']+(r['세부유형']?' · '+r['세부유형']:'')+(r['컬렉티브']?' · '+r['컬렉티브']:'')+' · '+r['지역'],'면적 '+(r['면적_평']!=null?r['면적_평']+'평':'미상')+' · 총비용 '+window.fcKRW(r['총비용'])+(py!=null?' · 평당 '+window.fcPPY(py):''),
+   '업체: 인테리어 '+(r['인테리어업체']||'—')+' / VM '+(r['VM업체']||'—')+' / 그래픽 '+(r['그래픽업체']||'—'),'원본 시트: '+r['원본시트']+(r['비고']?' · 비고: '+r['비고']:'')].forEach(function(l){var d=document.createElement('div');d.textContent=l;meta.appendChild(d);});
+  el.appendChild(meta);
+  var bars=document.createElement('div');bars.className='fc-bars';var mx=d3.max(window.FC_ITEMS,function(i){return r[i[0]];})||1;
+  window.FC_ITEMS.forEach(function(it,i){var row=document.createElement('div');row.className='fc-bar';var a=document.createElement('span');a.textContent=it[1];var tr=document.createElement('div');var f=document.createElement('i');f.style.width=(r[it[0]]/mx*100)+'%';f.style.background=window.FC_COLORS[i%5];tr.appendChild(f);var v=document.createElement('b');v.textContent=r[it[0]]?window.fcKRW(r[it[0]])+(r['면적_평']>=5?' · '+Math.round(r[it[0]]/r['면적_평']/1e4).toLocaleString('ko-KR')+'만/평':''):'—';row.appendChild(a);row.appendChild(tr);row.appendChild(v);bars.appendChild(row);});
+  (function(){var row=document.createElement('div');row.className='fc-bar';var a=document.createElement('span');a.textContent='전시품';var tr=document.createElement('div');var f=document.createElement('i');var ev=r['전시품'];f.style.width=(ev?Math.min(100,ev/mx*100):0)+'%';f.style.background='var(--fx-brown)';tr.appendChild(f);var v=document.createElement('b');v.textContent=ev?window.fcKRW(ev)+(r['면적_평']>=5?' · '+Math.round(ev/r['면적_평']/1e4).toLocaleString('ko-KR')+'만/평':'')+' (별도)':'— (입력 전)';if(!ev)v.style.color='var(--fc-muted)';row.appendChild(a);row.appendChild(tr);row.appendChild(v);bars.appendChild(row);})();
+  el.appendChild(bars);
+  var d=dash.data('details');if(d.status!=='ok')return;
+  var items=d.data.filter(function(x){return x['공간id']===r.id;});
+  if(!items.length){var p=document.createElement('div');p.className='meta';p.textContent='VM·사인 세부 내역이 연결된 시트 행이 없습니다.';el.appendChild(p);return;}
+  var w=document.createElement('div');w.className='fc-wrap';var tbl=document.createElement('table');tbl.className='fc-table';
+  var th=document.createElement('thead');th.innerHTML='<tr><th>구분</th><th>세부 항목 · 업체</th><th class="n">금액</th><th>관리 시트 건명</th></tr>';tbl.appendChild(th);
+  var tb=document.createElement('tbody');items.forEach(function(x){var tr=document.createElement('tr');[[x['구분']],[x['항목']],[window.fcKRW(x['금액']),'n'],[x['시트건명']+' (합계 '+window.fcKRW(x['시트합계'])+')']].forEach(function(c){var td=document.createElement('td');td.textContent=c[0];if(c[1])td.className=c[1];tr.appendChild(td);});tb.appendChild(tr);});
+  tbl.appendChild(tb);w.appendChild(tbl);el.appendChild(w);
+});
+</script>
+
+</div>
+<script>(function(){var el=document.getElementById('snapshot-date');if(el&&window.__META)el.textContent=window.__META.snapshot_date;})();</script>
+</body></html>
