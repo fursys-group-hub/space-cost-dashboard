@@ -92,8 +92,7 @@ color:var(--fc-fg)}
 <div class="fc">
   <header id="top">
     <h1>퍼시스그룹 공간 개설 비용</h1>
-    <p class="fc-lede">선택한 조건에서 <b data-draw="lede-n" data-source="spaces" data-field="id">—</b>개 공간에 총 <b data-draw="lede-total" data-source="spaces" data-field="총비용">—</b>이 들었습니다. 지출이 가장 큰 항목은 <b data-draw="lede-item">—</b>이고, 브랜드 중에서는 <b data-draw="lede-brand" data-source="spaces" data-field="브랜드">—</b>의 지출이 가장 큽니다.</p>
-    <p class="fc-sub">2015–2025년 브랜드별 비용정리 시트와 2024–2026년 퍼시스 프로젝트(컨플루언스)를 한 형식으로 합친 데이터입니다. 총비용 = 설계비 + 파사드 + 인테리어 + VM + 그래픽·사인 (기존 시트의 '총 합계'와 달리 설계비·파사드 포함). 금액 단위는 원이며, 부가세 포함 여부는 원본 시트를 따릅니다.</p>
+    <p class="fc-sub">브랜드디자인실에서 진행하고 있는 그룹사 공간 프로젝트의 개설 비용 데이터입니다. 아직 비어 있는 데이터는 브랜드별로 확인해 채워 나갈 예정입니다. 총비용 = 설계비 + 파사드 + 인테리어 + VM + 그래픽·사인 (기존 시트의 '총 합계'와 달리 설계비·파사드 포함). 금액 단위는 원이며, 부가세 포함 여부는 원본 시트를 따릅니다.</p>
   </header>
 
   <div class="fc-filters" id="filters">
@@ -261,7 +260,7 @@ window.fcRows=function(opts){var s=dash.data('spaces');if(s.status!=='ok')return
 window.fcBenchFrom=function(){var y=new Date().getFullYear();return y-(+window.FC.bp)+1;};
 window.fcPy=function(r){return r['면적_평']>=5&&r['비용범위']==='전체'?r['총비용']/r['면적_평']:null;};
 window.fcSyncColl=function(){var F=window.FC;var on=F.brands.has('컬렉티브')&&F.brands.size<window.FC_CHIPS.length;document.querySelectorAll('#collective').forEach(function(s){s.hidden=!on;});};
-window.fcRedraw=function(){window.fcSyncColl();['lede-n','lede-total','lede-item','lede-brand','k-n','k-n-sub','k-total','k-med','k-ppy','brand-chart','year-chart','bench-range','bench','per-item','by-subtype','collective','collective-note','list','list-count','detail'].forEach(function(n){dash.draw(n);});};
+window.fcRedraw=function(){window.fcSyncColl();['k-n','k-n-sub','k-total','k-med','k-ppy','brand-chart','year-chart','bench-range','bench','per-item','by-subtype','collective','collective-note','list','list-count','detail'].forEach(function(n){dash.draw(n);});};
 document.querySelectorAll('#legend i[data-item]').forEach(function(i){i.style.background=window.FC_COLORS[+i.getAttribute('data-item')%5];});
 document.querySelectorAll('.fc-chip[data-brand]').forEach(function(b){b.addEventListener('click',function(){var F=window.FC,k=b.getAttribute('data-brand');
   if(F.brands.has(k)&&F.brands.size===window.FC_CHIPS.length){F.brands=new Set([k]);}else if(F.brands.has(k)){F.brands.delete(k);if(!F.brands.size)F.brands=new Set(window.FC_CHIPS);}else F.brands.add(k);
@@ -276,15 +275,11 @@ document.querySelectorAll('#f-reset').forEach(function(el){el.addEventListener('
 
 <script>
 function fcTxt(name,fn){dash.draw(name,function(el){var rows=window.fcRows();if(!rows){el.textContent='—';return;}el.textContent=fn(rows);});}
-fcTxt('lede-n',function(r){return r.length.toLocaleString('ko-KR');});
 fcTxt('k-n',function(r){return r.length.toLocaleString('ko-KR');});
-fcTxt('lede-total',function(r){return window.fcKRW(d3.sum(r,function(x){return x['총비용'];}));});
 fcTxt('k-total',function(r){return window.fcKRW(d3.sum(r,function(x){return x['총비용'];}));});
 fcTxt('k-med',function(r){return window.fcKRW(d3.median(r,function(x){return x['총비용'];}));});
 fcTxt('k-ppy',function(r){return window.fcPPY(d3.median(r,window.fcPy));});
 fcTxt('k-n-sub',function(r){var all=window.fcRows({allScopes:true});var p=all.length-r.length;return window.FC.partial?'비용 미확정 '+all.filter(function(x){return x['비용범위']!=='전체';}).length+'곳 포함':'비용 미확정 '+p+'곳 제외';});
-fcTxt('lede-item',function(r){if(!r.length)return '—';var best=window.FC_ITEMS.map(function(it){return [it[1],d3.sum(r,function(x){return x[it[0]];})];}).sort(function(a,b){return b[1]-a[1];})[0];return best[0];});
-fcTxt('lede-brand',function(r){if(!r.length)return '—';var g=d3.rollups(r,function(v){return d3.sum(v,function(x){return x['총비용'];});},function(x){return x['브랜드'];}).sort(function(a,b){return b[1]-a[1];});return g[0][0];});
 
 function fcTip(el){var t=el.querySelector('.fc-tip');if(!t){t=document.createElement('div');t.className='fc-tip';t.hidden=true;el.appendChild(t);}return t;}
 function fcShow(el,t,ev,lines){t.replaceChildren();lines.forEach(function(l,i){var d=document.createElement('div');if(i>0)d.className='m';d.textContent=l;t.appendChild(d);});t.hidden=false;
